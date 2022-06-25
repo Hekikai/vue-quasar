@@ -39,7 +39,7 @@ const usePostsStore = defineStore({
     }
   },
   getters: {
-    getPostByUsername(state) {
+    getPostWithUsername(state) {
       return state.postWithUsername;
     },
     getPostsByGap() {
