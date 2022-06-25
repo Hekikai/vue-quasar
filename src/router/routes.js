@@ -5,11 +5,11 @@ const routes = [
     children: [
       {
         path: '',
-        component: () => import('pages/UsersList.vue'),
+        component: () => import('pages/PostListPage.vue'),
       },
       {
         path: '/:id',
-        component: () => import('pages/UserListItem.vue')
+        component: () => import('pages/PostPage.vue')
       }
 
     ]

@@ -5,67 +5,48 @@ import usersService from "src/services/users.service";
 const usePostsStore = defineStore({
   id: 'postsStore',
   state: () => ({
-    postsByUsername: new Map(),
-    postsByUserId: new Map(),
-    uniqueUserIds: new Set(),
     tableRows: [],
     postWithUsername: {},
+    idToUsername: new Map()
   }),
   actions: {
-    loadPostsAndUsername() {
-      if(this.postsByUserId.size !== 0) {
-        return false;
-      }
-      postsService.fetchPosts()
-        .then(data => {
-          data.forEach((post) => {
-            const posts = this.postsByUserId.get(post.userId);
+    async loadPostsAndUsername() {
+      const posts = await postsService.fetchPosts();
+      this.tableRows = await Promise.all(posts.map(async(post) => {
+        const username = await usersService.getUsernameById(post.userId);
 
-            if (!this.uniqueUserIds.has(post.userId)) {
-              this.uniqueUserIds.add(post.userId);
-            }
+        if (!this.idToUsername.has(post.userId)) {
+          this.idToUsername.set(post.userId, username);
+        }
 
-            if (posts) {
-              this.postsByUserId.get(post.userId).push(post);
-            } else {
-              this.postsByUserId.set(post.userId, [post]);
-            }
-          })
-        })
-        .then(() => {
-          this.uniqueUserIds.forEach(async(id) => {
-            this.postsByUsername.set(await usersService.getUsernameById(id), this.postsByUserId.get(id))
-          })
-        })
+        return {
+          username,
+          title: post.title,
+          body: post.body,
+          postId: post.id,
+        }
+      }));
     },
-    loadPostById(id) {
-      return postsService.fetchPostById(id)
-        .then(post => {
-          this.postWithUsername = post;
-        }).then(async () => {
-          const userId = this.postWithUsername.userId
-          this.postWithUsername.username = await usersService.getUsernameById(userId);
-      })
+    async loadPostById(id) {
+      const post = await postsService.fetchPostById(id);
+
+      this.postWithUsername = {
+        username: this.idToUsername.get(post.userId),
+        title: post.title,
+        body: post.body,
+        postId: post.id
+      }
     }
   },
   getters: {
-    getPostsByUsername(state) {
-      const rowsToReturn = [];
-      state.postsByUsername.forEach((posts, username) => {
-        posts.forEach((post) => {
-          const dto = {
-            username,
-            title: post.title,
-            body: post.body,
-            postId: post.id
-          }
-          rowsToReturn.push(dto);
-        })
-      })
-      return rowsToReturn;
+    getPostByUsername(state) {
+      return state.postWithUsername;
     },
     getPostsByGap() {
       return (lhs, rhs) => this.getPostsByUsername.slice(lhs, rhs + 1);
+    },
+    getPostsByUsername(state) {
+      return state.tableRows;
     }
   }
 })
