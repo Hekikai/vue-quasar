@@ -7,17 +7,17 @@
     />
     <q-card v-else dark bordered class="my-card">
       <q-card-section>
-        <div class="text-h6">{{ postWithUsername.title }}</div>
-        <div class="text-subtitle2">by {{ postWithUsername.username }}</div>
+        <div class="text-h6">{{ getPostWithUsername.title }}</div>
+        <div class="text-subtitle2">by {{ getPostWithUsername.username }}</div>
       </q-card-section>
 
       <q-separator dark inset/>
 
       <q-card-section>
-        Post id: {{ postWithUsername.postId }}
+        Post id: {{ getPostWithUsername.postId }}
       </q-card-section>
       <q-card-section>
-        Post body: {{ postWithUsername.body }}
+        Post body: {{ getPostWithUsername.body }}
       </q-card-section>
     </q-card>
   </div>
@@ -31,7 +31,7 @@ import { storeToRefs } from "pinia";
 
 const route = useRoute();
 const store = usePostsStore();
-const { postWithUsername } = storeToRefs(store);
+const { getPostWithUsername } = storeToRefs(store);
 const isPostLoaded = ref(false);
 
 store.loadPostById(route.params.id).then(() => isPostLoaded.value = true);
