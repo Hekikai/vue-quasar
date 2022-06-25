@@ -1,54 +1,38 @@
-import { defineStore } from "pinia";
-import postsService from "src/services/posts.service";
-import usersService from "src/services/users.service";
+import { defineStore } from 'pinia'
+import postsService from 'src/services/posts.service'
+import usersService from 'src/services/users.service'
 
 const usePostsStore = defineStore({
   id: 'postsStore',
+
   state: () => ({
-    tableRows: [],
-    postWithUsername: {},
-    idToUsername: new Map()
+    posts: [],
+    users: [],
   }),
+
   actions: {
-    async loadPostsAndUsername() {
-      const posts = await postsService.fetchPosts();
-      this.tableRows = await Promise.all(posts.map(async(post) => {
-        const username = await usersService.getUsernameById(post.userId);
-
-        if (!this.idToUsername.has(post.userId)) {
-          this.idToUsername.set(post.userId, username);
+    async loadPostsAndUsers() {
+      return Promise.all([postsService.fetchPosts(), usersService.fetchUsers()]).then(
+        ([posts, users]) => {
+          this.posts = posts
+          this.users = users
         }
-
-        return {
-          username,
-          title: post.title,
-          body: post.body,
-          postId: post.id,
-        }
-      }));
+      )
     },
-    async loadPostById(id) {
-      const post = await postsService.fetchPostById(id);
 
-      this.postWithUsername = {
-        username: this.idToUsername.get(post.userId),
-        title: post.title,
-        body: post.body,
-        postId: post.id
-      }
-    }
+    getPostById(postId) {
+      return this.postsWithUsernames.find((post) => post.id === parseInt(postId, 10))
+    },
   },
+
   getters: {
-    getPostWithUsername(state) {
-      return state.postWithUsername;
+    postsWithUsernames(state) {
+      return state.posts.map((post) => ({
+        ...post,
+        username: state.users.find((user) => user.id === post.userId)?.username,
+      }))
     },
-    getPostsByGap() {
-      return (lhs, rhs) => this.getPostsByUsername.slice(lhs, rhs + 1);
-    },
-    getPostsByUsername(state) {
-      return state.tableRows;
-    }
-  }
+  },
 })
 
-export default usePostsStore;
+export default usePostsStore
