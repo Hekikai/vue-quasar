@@ -58,11 +58,7 @@ const averageTitleLength = computed(() => {
   const lowerBorder = pagination.value.rowsPerPage * (pagination.value.page - 1);
   const upperBorder = pagination.value.rowsPerPage * (pagination.value.page) - 1;
 
-  let allTitlesLength = 0;
-
-  store.getPostsByGap(lowerBorder, upperBorder).forEach((post) => {
-    allTitlesLength += post.title.length;
-  })
+  const allTitlesLength = store.getPostsByGap(lowerBorder, upperBorder).reduce((acc, post) => acc += post.title.length, 0);
 
   return allTitlesLength / pagination.value.rowsPerPage;
 

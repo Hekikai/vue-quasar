@@ -14,7 +14,7 @@
       <q-separator dark inset/>
 
       <q-card-section>
-        Post id: {{ postWithUsername.id }}
+        Post id: {{ postWithUsername.postId }}
       </q-card-section>
       <q-card-section>
         Post body: {{ postWithUsername.body }}
@@ -25,7 +25,7 @@
 
 <script setup>
 import { useRoute } from "vue-router";
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import usePostsStore from "stores/posts.store";
 import { storeToRefs } from "pinia";
 
@@ -34,21 +34,17 @@ const store = usePostsStore();
 const { postWithUsername } = storeToRefs(store);
 const isPostLoaded = ref(false);
 
-watch(() => route.params.id,
-  () => {
-    if (typeof route.params.id === 'undefined') {
-      return;
-    }
-    store.loadPostById(route.params.id).then(() => isPostLoaded.value = true);
-  },
-  { immediate: true }
-)
+store.loadPostById(route.params.id).then(() => isPostLoaded.value = true);
 </script>
 
 <style scoped lang="scss">
 
 .column {
   min-height: calc(100vh - 50px);
+
+  .my-card {
+    max-width: 50%;
+  }
 }
 
 </style>
